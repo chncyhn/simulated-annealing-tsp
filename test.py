@@ -13,7 +13,7 @@ with open('coord.txt','r') as f:
         i += 1
 
 if __name__ == '__main__':
-    #coords = [[round(random.uniform(-10000,10000),4),round(random.uniform(-10000,10000),4)] for i in range(50)]
+    #coords = [[round(random.uniform(-1000,1000),4),round(random.uniform(-1000,1000),4)] for i in range(50)]
     sa = SimAnneal(coords)
     sa.Anneal()
     sa.visualizeRotes()

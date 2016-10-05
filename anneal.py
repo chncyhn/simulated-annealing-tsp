@@ -9,8 +9,8 @@ class SimAnneal(object):
         self.coords = coords
         self.N = len(coords)
         self.T = math.sqrt(self.N) if T == -1 else T
-        self.alpha = 0.998 if alpha == -1 else alpha
-        self.stopping_temperature = 0.000000001 if stopping_T == -1 else stopping_T
+        self.alpha = 0.995 if alpha == -1 else alpha
+        self.stopping_temperature = 0.00000001 if stopping_T == -1 else stopping_T
 
         self.dist_matrix = self.vecToDistanceMatrix(coords)
         self.nodes = [i for i in range(self.N)]
