@@ -5,18 +5,20 @@ import matplotlib.pyplot as plt
 
 class SimAnneal(object):
 
-    def __init__(self, coords, T = -1, alpha = -1, stopping_T = -1):
+    def __init__(self, coords, T = -1, alpha = -1, stopping_T = -1, stopping_iter = -1):
         self.coords = coords
         self.N = len(coords)
         self.T = math.sqrt(self.N) if T == -1 else T
         self.alpha = 0.995 if alpha == -1 else alpha
         self.stopping_temperature = 0.00000001 if stopping_T == -1 else stopping_T
+        self.stopping_iter = 100000 if stopping_iter == -1 else stopping_iter
+        self.iteration = 1
 
         self.dist_matrix = self.vecToDistanceMatrix(coords)
         self.nodes = [i for i in range(self.N)]
 
         self.cur_solution = self.initialSolution()
-        self.best_solution = self.cur_solution.copy()
+        self.best_solution = list(self.cur_solution)
 
         self.cur_fitness = self.fitness(self.cur_solution)
         self.initial_fitness = self.cur_fitness
@@ -31,7 +33,7 @@ class SimAnneal(object):
         cur_node = random.choice(self.nodes)
         solution = [cur_node]
 
-        free_list = self.nodes.copy()
+        free_list = list(self.nodes)
         free_list.remove(cur_node)
 
         while free_list:
@@ -91,13 +93,14 @@ class SimAnneal(object):
         '''
         Execute simulated annealing algorithm
         '''
-        while self.T >= self.stopping_temperature:
-            candidate = self.cur_solution.copy()
+        while self.T >= self.stopping_temperature and self.iteration < self.stopping_iter:
+            candidate = list(self.cur_solution)
             l = random.randint(2, self.N-1)
             i = random.randint(0, self.N-l)
             candidate[i:(i+l)] = reversed(candidate[i:(i+l)])
             self.accept(candidate)
             self.T *= self.alpha
+            self.iteration += 1
 
             self.fitness_list.append(self.cur_fitness)
 
@@ -115,4 +118,6 @@ class SimAnneal(object):
         Plot the fitness through iterations
         '''
         plt.plot([i for i in range(len(self.fitness_list))], self.fitness_list)
+        plt.ylabel('Fitness')
+        plt.xlabel('Iteration')
         plt.show()
