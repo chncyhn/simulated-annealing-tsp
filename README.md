@@ -15,7 +15,7 @@ An example of the resulting route on a TSP with 100 nodes.
 
 The fitness (objective value) through iterations.
 
-![Learning Plot](https://i.sli.mg/axXQRY.png)
+![Learning Plot](http://i.imgur.com/EVOkZs3.png)
 
 
 ----------
