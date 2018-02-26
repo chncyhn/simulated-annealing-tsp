@@ -15,6 +15,6 @@ with open('coord.txt','r') as f:
 if __name__ == '__main__':
     #coords = [[round(random.uniform(-1000,1000),4),round(random.uniform(-1000,1000),4)] for i in range(100)]
     sa = SimAnneal(coords, stopping_iter = 5000)
-    sa.Anneal()
-    sa.visualizeRotes()
-    sa.plotLearning()
+    sa.anneal()
+    sa.visualize_routes()
+    sa.plot_learning()
