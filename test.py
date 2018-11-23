@@ -3,18 +3,14 @@ import matplotlib.pyplot as plt
 import random
 
 coords = []
-with open('coord.txt','r') as f:
-    i = 0
+with open("coord.txt", "r") as f:
     for line in f.readlines():
-        line = [float(x.replace('\n','')) for x in line.split(' ')]
-        coords.append([])
-        for j in range(1,3):
-            coords[i].append(line[j])
-        i += 1
+        line = [float(x.replace("\n", "")) for x in line.split(" ")]
+        coords.append(line)
 
-if __name__ == '__main__':
-    #coords = [[round(random.uniform(-1000,1000),4),round(random.uniform(-1000,1000),4)] for i in range(100)]
-    sa = SimAnneal(coords, stopping_iter = 5000)
-    sa.anneal()
+if __name__ == "__main__":
+    # coords = [[random.uniform(-1000, 1000), random.uniform(-1000, 1000)] for i in range(100)]
+    sa = SimAnneal(coords, stopping_iter=5000)
+    sa.batch_anneal(times=10)
     sa.visualize_routes()
     sa.plot_learning()

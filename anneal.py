@@ -9,22 +9,17 @@ class SimAnneal(object):
         self.coords = coords
         self.N = len(coords)
         self.T = math.sqrt(self.N) if T == -1 else T
+        self.T_save = self.T
         self.alpha = 0.995 if alpha == -1 else alpha
-        self.stopping_temperature = 0.00000001 if stopping_T == -1 else stopping_T
-        self.stopping_iter = 100000 if stopping_iter == -1 else stopping_iter
+        self.stopping_temperature = 0.000_000_01 if stopping_T == -1 else stopping_T
+        self.stopping_iter = 100_000 if stopping_iter == -1 else stopping_iter
         self.iteration = 1
 
-        self.dist_matrix = self.to_dist_matrix(coords)
         self.nodes = [i for i in range(self.N)]
 
-        self.cur_solution = self.initial_solution()
-        self.best_solution = list(self.cur_solution)
-
-        self.cur_fitness = self.fitness(self.cur_solution)
-        self.initial_fitness = self.cur_fitness
-        self.best_fitness = self.cur_fitness
-
-        self.fitness_list = [self.cur_fitness]
+        self.best_solution = None
+        self.best_fitness = float("Inf")
+        self.fitness_list = []
 
     def initial_solution(self):
         """
@@ -33,37 +28,37 @@ class SimAnneal(object):
         cur_node = random.choice(self.nodes)
         solution = [cur_node]
 
-        free_list = list(self.nodes)
+        free_list = set(self.nodes)
         free_list.remove(cur_node)
 
         while free_list:
-            closest_dist = min([self.dist_matrix[cur_node][j] for j in free_list])
-            cur_node = self.dist_matrix[cur_node].index(closest_dist)
-            free_list.remove(cur_node)
-            solution.append(cur_node)
+            next_node = min(free_list, key=lambda x: self.dist(cur_node, x))
+            free_list.remove(next_node)
+            solution.append(next_node)
+            cur_node = next_node
 
-        return solution
+        cur_fit = self.fitness(solution)
+        if cur_fit < self.best_fitness:
+            self.best_fitness = cur_fit
+            self.best_solution = solution
+        self.fitness_list.append(cur_fit)
+        return solution, cur_fit
 
-    def dist(self, coord1, coord2):
+    def dist(self, node_0, node_1):
         """
-        Euclidean distance
+        Euclidean distance between two nodes.
         """
-        return round(math.sqrt(math.pow(coord1[0] - coord2[0], 2) + math.pow(coord1[1] - coord2[1], 2)), 4)
+        coord_0, coord_1 = self.coords[node_0], self.coords[node_1]
+        return math.sqrt((coord_0[0] - coord_1[0]) ** 2 + (coord_0[1] - coord_1[1]) ** 2)
 
-    def to_dist_matrix(self, coords):
+    def fitness(self, solution):
         """
-        Returns nxn nested list from a list of length n
-        Used as distance matrix: mat[i][j] is the distance between node i and j
-        'coords' has the structure [[x1,y1],...[xn,yn]]
+        Total distance of the current solution path.
         """
-        n = len(coords)
-        mat = [[self.dist(coords[i], coords[j]) for i in range(n)] for j in range(n)]
-        return mat
-
-    def fitness(self, sol):
-        """ Objective value of a solution """
-        return round(sum([self.dist_matrix[sol[i - 1]][sol[i]] for i in range(1, self.N)]) +
-                     self.dist_matrix[sol[0]][sol[self.N - 1]], 4)
+        cur_fit = 0
+        for i in range(self.N):
+            cur_fit += self.dist(solution[i % self.N], solution[(i + 1) % self.N])
+        return cur_fit
 
     def p_accept(self, candidate_fitness):
         """
@@ -79,35 +74,45 @@ class SimAnneal(object):
         """
         candidate_fitness = self.fitness(candidate)
         if candidate_fitness < self.cur_fitness:
-            self.cur_fitness = candidate_fitness
-            self.cur_solution = candidate
+            self.cur_fitness, self.cur_solution = candidate_fitness, candidate
             if candidate_fitness < self.best_fitness:
-                self.best_fitness = candidate_fitness
-                self.best_solution = candidate
-
+                self.best_fitness, self.best_solution = candidate_fitness, candidate
         else:
             if random.random() < self.p_accept(candidate_fitness):
-                self.cur_fitness = candidate_fitness
-                self.cur_solution = candidate
+                self.cur_fitness, self.cur_solution = candidate_fitness, candidate
 
     def anneal(self):
         """
         Execute simulated annealing algorithm
         """
+        self.cur_solution, self.cur_fitness = self.initial_solution()
+
+        print("Starting annealing.")
         while self.T >= self.stopping_temperature and self.iteration < self.stopping_iter:
             candidate = list(self.cur_solution)
             l = random.randint(2, self.N - 1)
             i = random.randint(0, self.N - l)
-            candidate[i:(i + l)] = reversed(candidate[i:(i + l)])
+            candidate[i : (i + l)] = reversed(candidate[i : (i + l)])
             self.accept(candidate)
             self.T *= self.alpha
             self.iteration += 1
 
             self.fitness_list.append(self.cur_fitness)
 
-        print('Best fitness obtained: ', self.best_fitness)
-        print('Improvement over greedy heuristic: ',
-              round((self.initial_fitness - self.best_fitness) / (self.initial_fitness), 4))
+        print("Best fitness obtained: ", self.best_fitness)
+        improvement = 100 * (self.fitness_list[0] - self.best_fitness) / (self.fitness_list[0])
+        print(f"Improvement over greedy heuristic: {improvement : .2f}%")
+
+    def batch_anneal(self, times=10):
+        """
+        Execute simulated annealing algorithm `times` times, with random initial solutions.
+        """
+        for i in range(1, times+1):
+            print(f"Iteration {i}/{times} -------------------------------")
+            self.T = self.T_save
+            self.iteration = 1
+            self.cur_solution, self.cur_fitness = self.initial_solution()
+            self.anneal()
 
     def visualize_routes(self):
         """
@@ -120,6 +125,6 @@ class SimAnneal(object):
         Plot the fitness through iterations
         """
         plt.plot([i for i in range(len(self.fitness_list))], self.fitness_list)
-        plt.ylabel('Fitness')
-        plt.xlabel('Iteration')
+        plt.ylabel("Fitness")
+        plt.xlabel("Iteration")
         plt.show()
