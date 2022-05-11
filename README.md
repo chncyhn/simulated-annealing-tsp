@@ -21,6 +21,7 @@ The fitness (objective value) through iterations.
 ----------
 
 **References**
-[Kirkpatrick et al. 1983: "Optimization by Simulated Annealing"](http://leonidzhukov.net/hse/2013/stochmod/papers/KirkpatrickGelattVecchi83.pdf)
+
+[Kirkpatrick et al. 1983: "Optimization by Simulated Annealing"](http://www2.stat.duke.edu/~scs/Courses/Stat376/Papers/TemperAnneal/KirkpatrickAnnealScience1983.pdf)
 
 http://www.blog.pyoung.net/2013/07/26/visualizing-the-traveling-salesman-problem-using-matplotlib-in-python/
